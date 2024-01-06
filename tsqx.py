@@ -48,6 +48,13 @@ class Blank(Op):
     def emit(self):
         return ""
 
+class Exp(Op):
+    def __init__(self, exp):
+        self.exp = exp
+
+    def emit(self):
+        return self.emit_exp()
+
 
 class Point(Op):
     def __init__(self, name, exp, **options):
@@ -156,6 +163,12 @@ class Parser:
                 raise SyntaxError("Unexpected end of line")
         return res
 
+    def parse_none(self, line):
+        line = line.strip()
+        # if line[-1] != ";":
+        #     line += ";"
+        return [line]
+
     def parse_special(self, tokens, comment):
         if not tokens:
             raise SyntaxError("Can't parse special command")
@@ -218,7 +231,13 @@ class Parser:
 
     def parse(self, line):
         line, *comment = line.split("#", 1)
+        # don't parse
+        if line[0] == "!":
+            exp = self.parse_none(line[1:])
+            yield Exp(exp), comment
+            return
         tokens = self.tokenize(line)
+        # blank
         if not tokens:
             yield (Blank(), comment)
             return
