@@ -4,6 +4,10 @@
 
 # original TSQ by evan chen
 
+# Edits made by Abel:
+# 1. Prepend "!" to a line to render raw asymptote code
+#    Don't add a semicolon at the end though
+
 import re, sys
 
 
@@ -48,6 +52,23 @@ class Blank(Op):
     def emit(self):
         return ""
 
+
+class Raw(Op):
+    def __init__(self, exp):
+        self.exp = exp
+
+    def lint_asy(self, exp):
+        """
+        Lint asymptote code.
+        Right now this is a dummy implementation.
+        """
+        if isinstance(exp, str):
+            return exp
+        else:
+            return "".join(self.exp)
+
+    def emit(self):
+        return self.lint_asy(self.exp)
 
 class Point(Op):
     def __init__(self, name, exp, **options):
@@ -100,6 +121,8 @@ class Parser:
     def tokenize(self, line):
         line = line.strip() + " "
         for old, new in [
+            # spaces around ! for parse_raw
+            ("!", " ! "),
             # ~ and = are separate tokens
             ("~", " ~ "),
             ("=", " = "),
@@ -155,6 +178,14 @@ class Parser:
             except IndexError:
                 raise SyntaxError("Unexpected end of line")
         return res
+
+    def parse_raw(self, tokens, comment):
+        """
+        Add a semicolon at the EOL.
+        This is called when the line is prepended with the character `!'.
+        """
+        tokens.append(";")
+        yield Raw(tokens), comment
 
     def parse_special(self, tokens, comment):
         if not tokens:
@@ -221,6 +252,10 @@ class Parser:
         tokens = self.tokenize(line)
         if not tokens:
             yield (Blank(), comment)
+            return
+        # raw
+        if tokens[0] == "!":
+            yield from self.parse_raw(tokens[1:], comment)
             return
         # special
         if tokens[0] == "~":
