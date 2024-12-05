@@ -6,7 +6,7 @@
 
 # Edits made by Abel:
 # 1. Prepend "!" to a line to render raw asymptote code
-#    Don't add a semicolon at the end though
+#    The only parsing for raw code is to add a semicolon at the end.
 
 import re, sys
 
