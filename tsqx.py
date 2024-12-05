@@ -7,6 +7,8 @@
 # Edits made by Abel:
 # 1. Prepend "!" to a line to render raw asymptote code
 #    The only parsing for raw code is to add a semicolon at the end.
+# 2. Updated lint_asy in the Raw class,
+#    removing the dummy implementation to have spaces while joining tokens
 
 import re, sys
 
@@ -59,13 +61,12 @@ class Raw(Op):
 
     def lint_asy(self, exp):
         """
-        Lint asymptote code.
-        Right now this is a dummy implementation.
+        Join tokens with spaces.
         """
         if isinstance(exp, str):
             return exp
         else:
-            return "".join(self.exp)
+            return " ".join(self.exp)
 
     def emit(self):
         return self.lint_asy(self.exp)
